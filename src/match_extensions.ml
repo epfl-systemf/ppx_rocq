@@ -202,7 +202,7 @@ let pattern_expr pattern =
 
 let context_var pattern =
   match pattern with
-  | Term pattern -> None
+  | Term _ -> None
   | Context (_, var) -> var
 
 let pattern_variables pattern =
@@ -246,7 +246,7 @@ module Term = struct
     | [] ->
        [%expr fun [%p context] _ -> [%e rhs.txt]]
     | pattern_variables ->
-       let to_binding Pattern_variable.{ name } =
+       let to_binding Pattern_variable.{ name; _ } =
          let loc = name.loc in
          let name_expr = Ast_builder.Default.estring ~loc name.txt in
          name, [%expr Names.(Id.Map.find (Id.of_string [%e name_expr]) __subst)]
@@ -316,7 +316,7 @@ module Goal = struct
        let pattern = Term.expand_term_pattern ~loc binder_pattern in
        [%expr let* value = [%e pattern] in Proofview.tclUNIT (Some value)]
 
-  let expand_hypothesis ~loc { name; binder_pattern; type_pattern } =
+  let expand_hypothesis ~loc { binder_pattern; type_pattern; _ } =
     let binder_pattern = expand_binder_pattern ~loc binder_pattern in
     let type_pattern = Term.expand_term_pattern ~loc type_pattern in
     [%expr

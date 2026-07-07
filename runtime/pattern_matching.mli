@@ -1,7 +1,6 @@
 (** Support for pattern matching on terms and goals. *)
 
 open Ltac2_plugin
-open Constr_matching
 open Tac2match
 open Names
 

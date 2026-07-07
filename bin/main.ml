@@ -17,6 +17,6 @@
  *)
 
 let () =
-  (** This command generates a standalone executable that pre-processes input files.
-      The executable includes an OCaml parser. *)
+  (* This command generates a standalone executable that pre-processes input files.
+     The executable includes an OCaml parser. *)
   Ppxlib.Driver.standalone ()

@@ -8,8 +8,8 @@ type 'a fragment =
 
 let rec parse_from ~from string =
   match Antiquotation.find ~from string with
-  | Some ({ percent; closing_brace } as antiquotation) ->
-     let { txt = literal } = Located_string.substring ~from ~until:percent string in
+  | Some ({ percent; closing_brace; _ } as antiquotation) ->
+     let { txt = literal; _ } = Located_string.substring ~from ~until:percent string in
      let rest =
        match closing_brace with
        | Some closing_brace -> parse_from ~from:(Located_string.advance "}" closing_brace) string
@@ -18,7 +18,7 @@ let rec parse_from ~from string =
      let result = Antiquotation antiquotation :: rest in
      if literal <> "" then Literal literal :: result else result
   | None ->
-     let { txt = literal } = Located_string.substring ~from string in
+     let { txt = literal; _ } = Located_string.substring ~from string in
      if literal <> "" then [Literal literal] else []
 
 let parse ~loc string =

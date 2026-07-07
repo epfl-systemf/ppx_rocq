@@ -1,6 +1,5 @@
 (** Methods for parsing terms, tactics, etc. *)
 
-open Names
 open Terms
 
 (** {1 Parsing functions} *)

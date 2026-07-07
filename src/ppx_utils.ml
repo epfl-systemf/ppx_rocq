@@ -1,10 +1,9 @@
 (** Utility methods for manipulation PPX expressions and locations. *)
 
 open Ppxlib
-open Expansion_helpers
 
 let rocq_loc_of_loc loc =
-  let Location.{ loc_start; loc_end } = loc in
+  let Location.{ loc_start; loc_end; _ } = loc in
   let file         = Ast_builder.Default.estring ~loc loc_start.pos_fname in
   let line_nb      = Ast_builder.Default.eint ~loc loc_start.pos_lnum in
   let line_nb_last = Ast_builder.Default.eint ~loc loc_end.pos_lnum in

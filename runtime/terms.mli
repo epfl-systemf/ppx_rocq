@@ -1,7 +1,5 @@
 (** Term API. *)
 
-open Tactics
-
 (** {1 Term representations} *)
 
 (** Rocq features several different representation of terms, each serving a

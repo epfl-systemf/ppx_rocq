@@ -59,11 +59,11 @@ let parse_expression expression =
     (* TODO: Report the parsing error. *)
     Ast_diagnostics.error ~loc "Could not parse expression %S" string
 
-let interpret_expression ~default ~explicit { percent; kind; expression; closing_brace } =
+let interpret_expression ~default ~explicit { percent; kind; expression; closing_brace; _ } =
   (* Check that the expression is closed before parsing. *)
   let parse_expression expression =
     match closing_brace with
-    | Some pos -> parse_expression expression
+    | Some _pos -> parse_expression expression
     | None ->
        let loc = { loc_start = percent.pos; loc_end = expression.loc.loc_end; loc_ghost = false } in
        let hint = "Hint: close the antiquotation with '}'" in
@@ -90,9 +90,9 @@ let interpret_expression ~default ~explicit { percent; kind; expression; closing
         | None ->
            Error { txt = "Unknown antiquotation \"" ^ kind ^ "\""; loc }
 
-let to_string { kind; expression } =
+let to_string { kind; expression; _ } =
   "%"
-  ^ (match kind with Default -> "" | Explicit { txt } -> txt ^ ":")
+  ^ (match kind with Default -> "" | Explicit { txt; _ } -> txt ^ ":")
   ^ "{"
   ^ expression.txt
   ^ "}"
