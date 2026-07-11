@@ -55,7 +55,7 @@ module Glob_constr = struct
   let fold = Glob_ops.fold_glob_constr
 end
 
-[%%if rocq = "9.2"]
+[%%if rocq = (9, 2)]
 let merge_ustate = Evd.merge_universe_context
 [%%else]
 let merge_ustate = Evd.merge_ustate
