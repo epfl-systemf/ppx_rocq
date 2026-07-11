@@ -10,6 +10,7 @@ depends: [
   "dune" {>= "3.17"}
   "rocq-runtime"
   "ppxlib"
+  "ppx_optcomp"
   "odoc" {with-doc}
 ]
 build: [

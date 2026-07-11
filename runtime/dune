@@ -4,4 +4,5 @@
  (synopsis "Runtime for ppx_rocq")
  (libraries
    rocq-runtime.plugins.ltac
-   rocq-runtime.plugins.ltac2))
+   rocq-runtime.plugins.ltac2)
+  (preprocess (pps ppx_optcomp -- -cookie "ppx_optcomp.env=env ~rocq:(Defined \"%{rocq:version.major}.%{rocq:version.minor}\")")))

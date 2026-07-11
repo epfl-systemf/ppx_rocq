@@ -55,6 +55,12 @@ module Glob_constr = struct
   let fold = Glob_ops.fold_glob_constr
 end
 
+[%%if rocq = "9.2"]
+let merge_ustate = Evd.merge_universe_context
+[%%else]
+let merge_ustate = Evd.merge_ustate
+[%%endif]
+
 module Constr = struct
   type t = constr
 
@@ -62,7 +68,7 @@ module Constr = struct
     let* env = Tactics.env in
     let* sigma = Tactics.evar_map in
     let constr, ustate = Constrintern.interp_constr env sigma e in
-    let sigma = Evd.merge_ustate sigma ustate in
+    let sigma = merge_ustate sigma ustate in
     Proofview.Unsafe.tclEVARS sigma >>
     return constr
 
@@ -70,7 +76,7 @@ module Constr = struct
     let* env = Tactics.env in
     let* sigma = Tactics.evar_map in
     let constr, ustate = Pretyping.understand env sigma c in
-    let sigma = Evd.merge_ustate sigma ustate in
+    let sigma = merge_ustate sigma ustate in
     Proofview.Unsafe.tclEVARS sigma >>
     return constr
 end
@@ -91,10 +97,6 @@ module Open_constr = struct
     let sigma, econstr = Pretyping.understand_tcc env sigma e in
     Proofview.Unsafe.tclEVARS sigma >>
     return econstr
-
-  let map f c =
-    let* sigma = Tactics.evar_map in
-    return (EConstr.map sigma f)
 end
 
 module Pattern = struct
