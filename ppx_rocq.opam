@@ -8,7 +8,7 @@ homepage: "https://github.com/epfl-systemf/ppx_rocq"
 bug-reports: "https://github.com/epfl-systemf/ppx_rocq/issues"
 depends: [
   "dune" {>= "3.17"}
-  "rocq-runtime"
+  "coq-core" {>= "9.2"}
   "ppxlib"
   "ppx_optcomp"
   "odoc" {with-doc}
