@@ -78,7 +78,7 @@ module Antiquotations = struct
     ]
 end
 
-let expand_antiquotation ~name parser quasiparser ~ctxt string string_loc =
+let expand_with_antiquotations ~name parser quasiparser ~ctxt string string_loc =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let template = Template.parse ~loc:string_loc string in
   let runtime_template, antiquotations =
@@ -107,7 +107,7 @@ module Expr = struct
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
     let parser = [%expr Ppx_rocq_runtime.Parsing.parse_constrexpr] in
     let quasiparser = [%expr Ppx_rocq_runtime.Parsing.quasiparse_constrexpr] in
-    expand_antiquotation ~name:"expr" parser quasiparser ~ctxt
+    expand_with_antiquotations ~name:"expr" parser quasiparser ~ctxt
 
   let extension =
     Extension.V3.declare
@@ -126,7 +126,7 @@ module Preterm = struct
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
     let parser = [%expr Ppx_rocq_runtime.Parsing.glob_constr_of_string] in
     let quasiparser = [%expr Ppx_rocq_runtime.Parsing.glob_constr_of_quasistring] in
-    expand_antiquotation ~name:"preterm" parser quasiparser ~ctxt
+    expand_with_antiquotations ~name:"preterm" parser quasiparser ~ctxt
 
   let extension =
     Extension.V3.declare
@@ -145,7 +145,7 @@ module Constr = struct
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
     let parser = [%expr Ppx_rocq_runtime.Parsing.constr_of_string] in
     let quasiparser = [%expr Ppx_rocq_runtime.Parsing.constr_of_quasistring] in
-    expand_antiquotation ~name:"constr" parser quasiparser ~ctxt
+    expand_with_antiquotations ~name:"constr" parser quasiparser ~ctxt
 
   let extension =
     Extension.V3.declare
@@ -162,7 +162,7 @@ module Open_constr = struct
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
     let parser = [%expr Ppx_rocq_runtime.Parsing.open_constr_of_string] in
     let quasiparser = [%expr Ppx_rocq_runtime.Parsing.open_constr_of_quasistring] in
-    expand_antiquotation ~name:"open_constr" parser quasiparser ~ctxt
+    expand_with_antiquotations ~name:"open_constr" parser quasiparser ~ctxt
 
   let extension =
     Extension.V3.declare
