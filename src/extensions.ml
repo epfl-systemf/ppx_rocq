@@ -78,13 +78,13 @@ module Antiquotations = struct
     ]
 end
 
-let expand_with_antiquotations ~name parser quasiparser ~ctxt string string_loc =
+let expand_with_antiquotations ~name ~default_kind ~parser ~quasiparser ~ctxt string string_loc =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let template = Template.parse ~loc:string_loc string in
   let runtime_template, antiquotations =
     Template.interpret
       ~loc:string_loc
-      ~default:Antiquotations.constr
+      ~default:default_kind
       ~explicit:Antiquotations.term
       template
   in
@@ -105,9 +105,12 @@ let expand_with_antiquotations ~name parser quasiparser ~ctxt string string_loc 
 module Expr = struct
   let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let parser = [%expr Ppx_rocq_runtime.Parsing.parse_constrexpr] in
-    let quasiparser = [%expr Ppx_rocq_runtime.Parsing.quasiparse_constrexpr] in
-    expand_with_antiquotations ~name:"expr" parser quasiparser ~ctxt
+    expand_with_antiquotations
+      ~name:"expr"
+      ~default_kind:Antiquotations.expr
+      ~parser:[%expr Ppx_rocq_runtime.Parsing.parse_constrexpr]
+      ~quasiparser:[%expr Ppx_rocq_runtime.Parsing.quasiparse_constrexpr]
+      ~ctxt
 
   let extension =
     Extension.V3.declare
@@ -124,9 +127,12 @@ end
 module Preterm = struct
   let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let parser = [%expr Ppx_rocq_runtime.Parsing.glob_constr_of_string] in
-    let quasiparser = [%expr Ppx_rocq_runtime.Parsing.glob_constr_of_quasistring] in
-    expand_with_antiquotations ~name:"preterm" parser quasiparser ~ctxt
+    expand_with_antiquotations
+      ~name:"preterm"
+      ~default_kind:Antiquotations.preterm
+      ~parser:[%expr Ppx_rocq_runtime.Parsing.glob_constr_of_string]
+      ~quasiparser:[%expr Ppx_rocq_runtime.Parsing.glob_constr_of_quasistring]
+      ~ctxt
 
   let extension =
     Extension.V3.declare
@@ -143,9 +149,12 @@ end
 module Constr = struct
   let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let parser = [%expr Ppx_rocq_runtime.Parsing.constr_of_string] in
-    let quasiparser = [%expr Ppx_rocq_runtime.Parsing.constr_of_quasistring] in
-    expand_with_antiquotations ~name:"constr" parser quasiparser ~ctxt
+    expand_with_antiquotations
+      ~name:"constr"
+      ~default_kind:Antiquotations.constr
+      ~parser:[%expr Ppx_rocq_runtime.Parsing.constr_of_string]
+      ~quasiparser:[%expr Ppx_rocq_runtime.Parsing.constr_of_quasistring]
+      ~ctxt
 
   let extension =
     Extension.V3.declare
@@ -160,9 +169,12 @@ end
 module Open_constr = struct
   let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let parser = [%expr Ppx_rocq_runtime.Parsing.open_constr_of_string] in
-    let quasiparser = [%expr Ppx_rocq_runtime.Parsing.open_constr_of_quasistring] in
-    expand_with_antiquotations ~name:"open_constr" parser quasiparser ~ctxt
+    expand_with_antiquotations
+      ~name:"open_constr"
+      ~default_kind:Antiquotations.open_constr
+      ~parser:[%expr Ppx_rocq_runtime.Parsing.open_constr_of_string]
+      ~quasiparser:[%expr Ppx_rocq_runtime.Parsing.open_constr_of_quasistring]
+      ~ctxt
 
   let extension =
     Extension.V3.declare
