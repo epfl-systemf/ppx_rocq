@@ -66,9 +66,10 @@ module Glob_constr : sig
   (** Type of globalized untyped terms. Globalized terms use fully qualified
       names, have resolved notations, and do not use implicit arguments. *)
 
-  val of_constrexpr : constrexpr -> t Proofview.tactic
-  (** [of_constrexpr e] translates a concrete syntax term [e] to a globalized term by
-      resolving names, notations, and by inserting implicit arguments. *)
+  val of_constrexpr : constrexpr -> t
+  (** [of_constrexpr e] translates a concrete syntax term [e] to a globalized
+      term in the current environment by resolving names, notations, and by
+      inserting implicit arguments. *)
 
   val of_constr : constr -> t Proofview.tactic
   (** [of_constr c] converts a well-typed term [c] to a globalized term by

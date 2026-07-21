@@ -33,12 +33,12 @@ let glob_constr_of_string ?loc s =
   Terms.Glob_constr.of_constrexpr parsed_term
 
 let constr_of_string ?loc s =
-  let parsed_term = parse_constrexpr ?loc s in
-  Terms.Constr.of_constrexpr parsed_term
+  let glob_constr = glob_constr_of_string ?loc s in
+  Terms.Constr.of_glob_constr glob_constr
 
 let open_constr_of_string ?loc s =
-  let parsed_term = parse_constrexpr ?loc s in
-  Terms.Open_constr.of_constrexpr parsed_term
+  let glob_constr = glob_constr_of_string ?loc s in
+  Terms.Open_constr.of_glob_constr glob_constr
 
 let match_pattern_of_string ?loc s =
   let parsed_pattern = parse_match_pattern ?loc s in
@@ -182,9 +182,6 @@ let with_holes entry f =
 let parse_with_holes ?loc s =
   with_holes Procq.Constr.term (fun () -> parse_constrexpr ?loc s)
 
-open Proofview.Monad
-open Tactics
-
 [%%if rocq = (9, 2)]
 let antiquotation_to_constrexpr ?loc : antiquotation -> Terms.constrexpr = function
   | `Expr e -> e
@@ -227,24 +224,20 @@ let antiquotation_to_glob_constr ?loc glob_sign : antiquotation -> Terms.glob_co
 [%%endif]
 
 let glob_constr_of_quasistring ?loc s =
-  let open Tactics in
   let partial_term = parse_with_holes ?loc s in
-  let* partial_glob_constr = Terms.Glob_constr.of_constrexpr partial_term in
-  return (fun substitutions -> Hole.fill_glob_holes
+  let partial_glob_constr = Terms.Glob_constr.of_constrexpr partial_term in
+  fun substitutions -> Hole.fill_glob_holes
                          (fun ?loc (Hole n) glob_sign -> antiquotation_to_glob_constr ?loc glob_sign substitutions.(n))
-                         partial_glob_constr)
+                         partial_glob_constr
 
 let open_constr_of_quasistring ?loc s =
-  let* partial_glob_constr = glob_constr_of_quasistring ?loc s in
-  return (fun substitutions ->
+  let partial_glob_constr = glob_constr_of_quasistring ?loc s in
+  fun substitutions ->
       let glob_constr = partial_glob_constr substitutions in
-      Terms.Open_constr.of_glob_constr glob_constr)
+      Terms.Open_constr.of_glob_constr glob_constr
 
 let constr_of_quasistring ?loc s =
-  let* partial_glob_constr = glob_constr_of_quasistring ?loc s in
-  return (fun substitutions ->
+  let partial_glob_constr = glob_constr_of_quasistring ?loc s in
+  fun substitutions ->
       let glob_constr = partial_glob_constr substitutions in
-      Terms.Constr.of_glob_constr glob_constr)
-
-let substitute term_with_holes values =
-  let* t = term_with_holes in t values
+      Terms.Constr.of_glob_constr glob_constr

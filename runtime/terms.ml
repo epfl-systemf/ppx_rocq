@@ -41,9 +41,9 @@ module Glob_constr = struct
   type t = glob_constr
 
   let of_constrexpr e =
-    let* env = Tactics.env in
-    let* sigma = Tactics.evar_map in
-    return (Constrintern.intern_constr env sigma e)
+    let env = Global.env () in
+    let sigma = Evd.from_env env in
+    Constrintern.intern_constr env sigma e
 
   let of_constr c =
     let* env = Tactics.env in
@@ -64,14 +64,6 @@ let merge_ustate = Evd.merge_ustate
 module Constr = struct
   type t = constr
 
-  let of_constrexpr e =
-    let* env = Tactics.env in
-    let* sigma = Tactics.evar_map in
-    let constr, ustate = Constrintern.interp_constr env sigma e in
-    let sigma = merge_ustate sigma ustate in
-    Proofview.Unsafe.tclEVARS sigma >>
-    return constr
-
   let of_glob_constr c =
     let* env = Tactics.env in
     let* sigma = Tactics.evar_map in
@@ -79,17 +71,12 @@ module Constr = struct
     let sigma = merge_ustate sigma ustate in
     Proofview.Unsafe.tclEVARS sigma >>
     return constr
+
+  let of_constrexpr e = of_glob_constr (Glob_constr.of_constrexpr e)
 end
 
 module Open_constr = struct
   type t = open_constr
-
-  let of_constrexpr e =
-    let* env = Tactics.env in
-    let* sigma = Tactics.evar_map in
-    let sigma, constr = Constrintern.interp_open_constr env sigma e in
-    Proofview.Unsafe.tclEVARS sigma >>
-    return constr
 
   let of_glob_constr e =
     let* env = Tactics.env in
@@ -97,6 +84,9 @@ module Open_constr = struct
     let sigma, econstr = Pretyping.understand_tcc env sigma e in
     Proofview.Unsafe.tclEVARS sigma >>
     return econstr
+
+  let of_constrexpr e =
+    of_glob_constr (Glob_constr.of_constrexpr e)
 end
 
 module Pattern = struct
