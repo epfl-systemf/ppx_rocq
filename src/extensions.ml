@@ -160,6 +160,7 @@ module Constr = struct
         |> Persistent_objects.persist ~loc ~string_loc
         |> Hoister.hoist ~loc ~name:"preterm"
         |> fun t -> [%expr Ppx_rocq_runtime.Terms.Constr.of_glob_constr [%e t]]
+        |> fun t -> [%expr Ppx_rocq_runtime.Tactics.memoize [%e t]]
         |> Hoister.hoist ~loc ~name:"constr"
       )
       ~quasiparse:(fun ~loc ~string_loc ~rocq_loc ~string ~antiquotations ->
