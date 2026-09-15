@@ -22,7 +22,9 @@ let hoisted_expressions_collector =
          let expr, acc = super#expression expr acc in
          let symbol = Ppx_utils.gen_symbol ?prefix () in
          let variable = Ast_builder.Default.pvar ~loc symbol in
-         let binding = [%stri let [%p variable] = [%e expr]] in
+         (* [open (struct … end)] hides our generated bindings from inferred
+            signatures, e.g., as printed by [ocamlc -i]. *)
+         let binding = [%stri open (struct let [%p variable] = [%e expr] end)] in
          (Ast_builder.Default.evar ~loc symbol, binding :: acc)
       | Error _ ->
          super#expression expr acc
