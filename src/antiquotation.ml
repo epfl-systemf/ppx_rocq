@@ -54,10 +54,7 @@ let parse_expression expression =
   let lexbuf = Lexing.from_string string in
   Lexing.set_position lexbuf loc.loc_start;
   Lexing.set_filename lexbuf loc.loc_start.pos_fname;
-  try Parse.expression lexbuf
-  with _ ->
-    (* TODO: Report the parsing error. *)
-    Ast_diagnostics.error ~loc "Could not parse expression %S" string
+  Parse.expression lexbuf
 
 let interpret_expression ~default ~explicit { percent; kind; expression; closing_brace; _ } =
   (* Check that the expression is closed before parsing. *)
