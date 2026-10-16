@@ -8,6 +8,7 @@ license: "LGPL-2.1-only"
 homepage: "https://github.com/epfl-systemf/ppx_rocq"
 bug-reports: "https://github.com/epfl-systemf/ppx_rocq/issues"
 depends: [
+  "ocaml" {>= "4.14"}
   "coq-core" {>= "9.0"}
   "dune" {>= "3.17" & < "3.24"}
   "ppxlib"

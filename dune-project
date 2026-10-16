@@ -17,6 +17,7 @@
  (name ppx_rocq)
  (synopsis "PPX syntax extensions for quoting Rocq terms in OCaml")
  (depends
+   (ocaml (>= 4.14))
    (coq-core (>= 9.0))
    (dune (< 3.24)) ;; Dune 3.24 removes "%{coq:version}" variables
    ppxlib
