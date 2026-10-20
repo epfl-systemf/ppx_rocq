@@ -31,11 +31,10 @@ let nat_plus_assoc = {%constr| forall x y z : nat, (x + y) + z = x + (y + z) |} 
 
 ## Setup
 
-`ppx_rocq` supports Rocq >= 9.0 (including `master`), and can be installed through `opam` using the following commands:
+`ppx_rocq` supports Rocq ≥ 9.0, and can be installed through `opam` using the following commands:
 ```bash
-opam update
 opam repo add rocq-released https://rocq-prover.github.io/opam/released/
-opam pin add https://github.com/epfl-systemf/ppx_rocq.git
+opam install ppx_rocq
 ```
 
 To use `ppx_rocq` in a plugin, add `ppx_rocq` to the `preprocessing` field of your `library` or `executable` Dune stanza:
