@@ -2,9 +2,38 @@
 opam-version: "2.0"
 version: "1.0.0"
 synopsis: "PPX syntax extensions for quoting Rocq terms in OCaml"
+description: """
+`ppx_rocq` is a PPX rewriter that enables Rocq plugin writers to write Rocq terms using a simple quotation system:
+```ocaml
+let nat_plus_assoc = {%constr| forall x y z : nat, (x + y) + z = x + (y + z) |} ;;
+- : EConstr.t Proofview.tactic
+```
+
+`ppx_rocq` is notably used by [Camltac](https://github.com/epfl-systemf/camltac), where it provides:
+
+1. Quotations from Ltac2 (`%constr`, `%open_constr`, `%preterm`), an extra quotation for concrete syntax terms (`%expr`), and quotations for identifiers (`%ident`) and qualifiers (`%qualid`).
+
+2. Anti-quotations, using the `%{…}` notation:
+   ```ocaml
+   let lhs = {%expr| (x + y) + z |} in
+   let rhs = {%expr| x + (y + z) |} in
+   let nat_plus_assoc = {%constr| forall x y z : nat, %expr:{lhs} = %expr:{rhs} |} ;;
+   - : EConstr.t Proofview.tactic
+   ```
+
+3. Pattern-matching extensions for matching over terms and goals:
+   ```ocaml
+   match%rocq {| 1 + 1 |} with
+   | {| ?x + _ |} -> Proofview.tclUNIT x
+   | _ -> assert false ;;
+   - : EConstr.t Proofview.tactic
+   ```"""
 maintainer: ["Dario Halilovic"]
 authors: ["Dario Halilovic"]
 license: "LGPL-2.1-only"
+tags: [
+  "category:Miscellaneous/Rocq Extensions" "keyword:ocaml" "keyword:ppx"
+]
 homepage: "https://github.com/epfl-systemf/ppx_rocq"
 bug-reports: "https://github.com/epfl-systemf/ppx_rocq/issues"
 depends: [
