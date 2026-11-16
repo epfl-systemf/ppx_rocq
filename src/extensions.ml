@@ -21,7 +21,7 @@ module Ident = struct
 
   let extension =
     Extension.V3.declare
-      "ident"
+      "rocq.ident"
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
@@ -36,7 +36,7 @@ module Qualid = struct
 
   let extension =
     Extension.V3.declare
-      "qualid"
+      "rocq.qualid"
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
@@ -51,7 +51,7 @@ module Vernac = struct
 
   let extension =
     Extension.V3.declare
-      "vernac"
+      "rocq.vernac"
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
@@ -113,7 +113,7 @@ module Expr = struct
 
   let extension =
     Extension.V3.declare
-      "expr"
+      "rocq.expr"
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
@@ -141,7 +141,7 @@ module Preterm = struct
 
   let extension =
     Extension.V3.declare
-      "preterm"
+      "rocq.preterm"
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
@@ -176,7 +176,7 @@ module Constr = struct
 
   let extension =
     Extension.V3.declare
-      "constr"
+      "rocq.constr"
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
@@ -208,7 +208,7 @@ module Open_constr = struct
 
   let extension =
     Extension.V3.declare
-      "open_constr"
+      "rocq.open_constr"
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand

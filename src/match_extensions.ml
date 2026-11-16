@@ -396,5 +396,5 @@ let rule name key =
   in Ppxlib.Context_free.Rule.extension extension
 
 module Rocq = struct let rule = rule "rocq" Default end
-module Lazy = struct let rule = rule "lazy" Lazy end
-module Multi = struct let rule = rule "multi" Multi end
+module Lazy = struct let rule = rule "rocq.lazy" Lazy end
+module Multi = struct let rule = rule "rocq.multi" Multi end
