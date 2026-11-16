@@ -216,13 +216,7 @@ module Term = struct
     match pattern with
     | Pattern { txt = pattern; loc = pattern_loc } ->
        let pattern_expr = Ast_builder.Default.estring ~loc:pattern_loc pattern in
-       let rocq_loc = Ppx_utils.rocq_loc_of_loc pattern_loc in
-       Hoister.hoist ~loc ~name:"pattern"
-         [%expr
-           Ppx_rocq_runtime.Tactics.memoize begin
-             Ppx_rocq_runtime.Parsing.match_pattern_of_string
-               ~loc:[%e rocq_loc] [%e pattern_expr]
-           end]
+       [%expr [%rocq.pattern [%e pattern_expr]]]
     | Wildcard wildcard_loc ->
        let loc = match wildcard_loc with Some loc -> loc | None -> loc in
        [%expr Ppx_rocq_runtime.Terms.Pattern.wildcard]
