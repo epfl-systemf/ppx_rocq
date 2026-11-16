@@ -37,14 +37,15 @@ tags: [
 homepage: "https://github.com/epfl-systemf/ppx_rocq"
 bug-reports: "https://github.com/epfl-systemf/ppx_rocq/issues"
 depends: [
+  "dune" {>= "3.21"}
   "ocaml" {>= "4.14"}
-  "coq-core" {>= "9.0"}
-  "dune" {>= "3.17" & < "3.24"}
+  "rocq-core" {>= "9.0"}
   "ppxlib"
   "ppx_optcomp"
   "odoc" {with-doc}
 ]
 build: [
+  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
@@ -58,3 +59,4 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/epfl-systemf/ppx_rocq.git"
+x-maintenance-intent: ["(latest)"]

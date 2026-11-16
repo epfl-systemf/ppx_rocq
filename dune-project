@@ -1,7 +1,6 @@
-(lang dune 3.17)
+(lang dune 3.21)
 
 (generate_opam_files true)
-(subst disabled) ;; Work-around for Dune 3.17 subst bug: https://github.com/ocaml/dune/issues/11045
 
 (name ppx_rocq)
 (version 1.0.0)
@@ -51,7 +50,6 @@ quotation for concrete syntax terms (`%expr`), and quotations for identifiers \
    "keyword:ppx"))
  (depends
    (ocaml (>= 4.14))
-   (coq-core (>= 9.0))
-   (dune (< 3.24)) ;; Dune 3.24 removes "%{coq:version}" variables
+   (rocq-core (>= 9.0))
    ppxlib
    ppx_optcomp))
