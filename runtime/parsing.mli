@@ -50,6 +50,10 @@ val glob_constr_of_string : ?loc:Loc.t -> string -> glob_constr
     {!Terms.Constr.of_glob_constr} instead.
  *)
 
+val glob_pattern_of_string : ?loc:Loc.t -> string -> glob_constr
+(** [glob_pattern_of_string s] behaves like [glob_constr_of_string], except that
+    the term is parsed using [parse_match_pattern] and globalized in pattern mode. *)
+
 val constr_of_string : ?loc:Loc.t -> string -> constr Proofview.tactic
 (** [constr_of_string s] parses an evar-free Rocq term from string [s]. *)
 
@@ -103,11 +107,16 @@ type antiquotation =
   | `Open_constr of open_constr (** [%open_constr:{…}] *)
   | `Preterm of glob_constr     (** [%preterm:{…}] *)
   | `Expr of constrexpr         (** [%expr:{…}] *)
+  | `Pattern of pattern         (** [%pattern:{…}]. Only allowed in [%pattern] quotations. *)
   ]
 
 val constrexpr_of_quasistring : ?loc:Loc.t -> string -> constrexpr
 (** [constrexpr_of_quasistring s] behaves like [parse_constexpr s], except that
     holes are allowed. *)
+
+val pattern_of_quasistring : ?loc:Loc.t -> string -> constrexpr
+(** [pattern_of_quasistring s] behaves like [constrexpr_of_quasistring s], except that
+    the term is parsed using [parse_match_pattern] instead of [parse_term]. *)
 
 val substitute_in_constrexpr : constrexpr -> antiquotation array -> constrexpr
 (** [substitute_in_constrexpr t substitutions] performs substitution on the
@@ -116,6 +125,11 @@ val substitute_in_constrexpr : constrexpr -> antiquotation array -> constrexpr
 val glob_constr_of_quasistring : ?loc: Loc.t -> string -> glob_constr
 (** [glob_constr_of_quasistring s] behaves like [glob_constr_of_string s],
     except that holes are allowed. *)
+
+val glob_pattern_of_quasistring : ?loc: Loc.t -> string -> glob_constr
+(** [glob_pattern_of_quasistring s] behaves like [glob_constr_of_quasistring s],
+    except that the string is parsed using [parse_match_pattern] instead of
+    [parse_term]. *)
 
 val substitute_in_glob_constr : glob_constr -> antiquotation array -> glob_constr
 (** [substitute_in_glob_constr t substitutions] performs substitution on the

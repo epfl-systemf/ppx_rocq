@@ -26,11 +26,13 @@ let wit_hole : (hole, glob_hole) GenConstr.tag = GenConstr.create "ppx_rocq:hole
 [%%if rocq <= (9, 2)]
 let () =
   let intern_hole ?loc:_ glob_sign hole = glob_sign, (hole, glob_sign) in
-  Genintern.register_intern0 wit_hole intern_hole
+  Genintern.register_intern0 wit_hole intern_hole;
+  Genintern.register_intern_pat wit_hole intern_hole
 [%%else]
 let () =
   let intern_hole ?loc:_ glob_sign hole = hole, glob_sign in
-  Genintern.register_intern_constr wit_hole intern_hole
+  Genintern.register_intern_constr wit_hole intern_hole;
+  Genintern.register_intern_pat wit_hole intern_hole
 [%%endif]
 
 (** {2 Interpretation} *)

@@ -58,10 +58,12 @@ module Glob_constr : sig
   (** Type of globalized untyped terms. Globalized terms use fully qualified
       names, have resolved notations, and do not use implicit arguments. *)
 
-  val of_constrexpr : constrexpr -> t
-  (** [of_constrexpr e] translates a concrete syntax term [e] to a globalized
+  val of_constrexpr : ?pattern:bool -> constrexpr -> t
+  (** [of_constrexpr ?pattern e] translates a concrete syntax term [e] to a globalized
       term in the current environment by resolving names, notations, and by
-      inserting implicit arguments. *)
+      inserting implicit arguments.
+
+      If [pattern] is [true], the term is globalized in pattern mode. *)
 
   val map : (t -> t) -> t -> t
   (** [map f c] maps every immediate subterm of [c] through function [f]. *)
@@ -90,6 +92,9 @@ module Pattern : sig
 
   val of_constrexpr : constrexpr -> t Proofview.tactic
   (** [of_constrexpr e] interprets expression [e] as a pattern. *)
+
+  val of_glob_constr : glob_constr -> t Proofview.tactic
+  (** [of_glob_constr e] interprets expression [e] as a pattern. *)
 
   val wildcard : t Proofview.tactic
   (** [wildcard] is the wildcard pattern ([_]). *)
