@@ -27,10 +27,11 @@ end
 module Glob_constr = struct
   type t = glob_constr
 
-  let of_constrexpr e =
+  let of_constrexpr ?(pattern = false) e =
     let env = Global.env () in
     let sigma = Evd.from_env env in
-    Constrintern.intern_constr env sigma e
+    if pattern then Constrintern.intern_gen WithoutTypeConstraint ~pattern_mode:true env sigma e
+    else Constrintern.intern_constr env sigma e
 
   let map = Glob_ops.map_glob_constr
 end
@@ -78,6 +79,22 @@ module Pattern = struct
     let* env = Tactics.env in
     let* sigma = Tactics.evar_map in
     let _, pattern = Constrintern.intern_constr_pattern env sigma e in
+    return pattern
+  [%%endif]
+
+  [%%if rocq >= (9, 2)]
+  let of_glob_constr e =
+    let* env = Tactics.env in
+    let* sigma = Tactics.evar_map in
+    let _, uninstantiated_pattern = Patternops.pattern_of_glob_constr env e in
+    let ltac_map = Glob_ops.empty_lvar in
+    let pattern = Patternops.interp_pattern env sigma ltac_map uninstantiated_pattern in
+    return pattern
+  [%%else]
+  let of_glob_constr e =
+    let* env = Tactics.env in
+    let* sigma = Tactics.evar_map in
+    let _, pattern = Patternops.pattern_of_glob_constr env e in
     return pattern
   [%%endif]
 

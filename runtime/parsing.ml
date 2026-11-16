@@ -42,6 +42,10 @@ let glob_constr_of_string ?loc s =
   let parsed_term = parse_constrexpr ?loc s in
   Terms.Glob_constr.of_constrexpr parsed_term
 
+let glob_pattern_of_string ?loc s =
+  let parsed_pattern = parse_match_pattern ?loc s in
+  Terms.Glob_constr.of_constrexpr ~pattern:true parsed_pattern
+
 let constr_of_string ?loc s =
   let glob_constr = glob_constr_of_string ?loc s in
   Terms.Constr.of_glob_constr glob_constr
@@ -62,6 +66,7 @@ type genarg_antiquotation =
   [ `Constr of Terms.constr           (** [%{…}] or [%constr:{…}] *)
   | `Open_constr of Terms.open_constr (** [%open_constr:{…}] *)
   | `Preterm of Terms.glob_constr     (** [%preterm:{…}] *)
+  | `Pattern of Terms.pattern (** [%pattern:{…}]. Only allowed in [%pattern] quotations. *)
   ]
 
 type antiquotation =
@@ -96,6 +101,9 @@ let intern_antiquotation ?loc:_ _glob_sign (antiquotation: genarg_antiquotation)
 let () =
   Genintern.register_intern_constr wit_antiquotation intern_antiquotation
 [%%endif]
+
+let () =
+  Genintern.register_intern_pat wit_antiquotation intern_antiquotation
 
 let interp_constr_antiquotation ?loc env sigma tycon c =
   let judgment = Retyping.get_judgment_of env sigma c in
@@ -144,14 +152,38 @@ let interp_preterm_antiquotation env sigma tycon t =
   in
   Environ.make_judge t ty, sigma
 
+(** Interpret antiquotations in terms. *)
 let interp ?loc ~poly:_ env sigma tycon =
   let env = GlobEnv.renamed_env env in
   function
   | `Constr c | `Open_constr c -> interp_constr_antiquotation ?loc env sigma tycon c
   | `Preterm t -> interp_preterm_antiquotation env sigma tycon t
+  | `Pattern _ ->
+     (* Patterns cannot be used in constrs. *)
+     assert false
 
 let () =
   GlobEnv.register_constr_interp0 wit_antiquotation interp
+
+[%%if rocq >= (9, 2)]
+let pattern_of_glob_constr env sigma ltac_map t =
+  let _, pattern = Patternops.pattern_of_glob_constr env t in
+  Patternops.interp_pattern env sigma ltac_map pattern
+[%%else]
+let pattern_of_glob_constr env _ _ t =
+  let _, pattern = Patternops.pattern_of_glob_constr env t in
+  pattern
+[%%endif]
+
+(** Interpret antiquotations in patterns. *)
+let interp_pat env sigma ltac_map =
+  function
+  | `Constr c | `Open_constr c -> Patternops.pattern_of_constr env sigma c
+  | `Preterm t -> pattern_of_glob_constr env sigma ltac_map t
+  | `Pattern p -> p
+
+let () =
+  Patternops.register_interp_pat wit_antiquotation interp_pat
 
 (* Module substitution does not affect our antiquotations. *)
 [%%if rocq <= (9, 2)]
@@ -167,6 +199,7 @@ let print_antiquotation (antiquotation: genarg_antiquotation) =
     | `Constr c -> str "%{" ++ Printer.pr_econstr_env env sigma c ++ str "}"
     | `Open_constr c -> str "%open_constr:{" ++ Printer.pr_econstr_env env sigma c ++ str "}"
     | `Preterm t -> str "%preterm:{" ++ Printer.pr_glob_constr_env env sigma t ++ str "}"
+    | `Pattern p -> str "%pattern:{" ++ Printer.pr_constr_pattern_env env sigma p ++ str "}"
   )
 
 [%%if rocq <= (9, 2)]
@@ -229,6 +262,11 @@ let antiquotation_to_constrexpr ?loc : antiquotation -> Terms.constrexpr = funct
 let constrexpr_of_quasistring ?loc s =
   with_holes Procq.Constr.term (fun () -> parse_constrexpr ?loc s)
 
+let pattern_of_quasistring ?loc s =
+  (* We use term instead of cpattern, since the latter is an alias for the former
+     that does not have grammar levels (and hence cannot be extended). *)
+  with_holes Procq.Constr.term (fun () -> parse_match_pattern ?loc s)
+
 let substitute_in_constrexpr term substitutions =
   Hole.fill_holes
     (fun ?loc (Hole n) -> antiquotation_to_constrexpr ?loc substitutions.(n))
@@ -241,7 +279,7 @@ let antiquotation_to_glob_constr ?loc (glob_sign: Genintern.glob_sign) : antiquo
      let sigma = Evd.from_env env in
      Constrintern.intern_core WithoutTypeConstraint env sigma glob_sign.intern_sign e
   | `Preterm e -> e
-  | (`Constr _ | `Open_constr _) as antiquotation ->
+  | (`Constr _ | `Open_constr _ | `Pattern _) as antiquotation ->
      let open Glob_term in
      let genarg = GGenarg (Genarg.GenArg (Genarg.glbwit wit_antiquotation, antiquotation)) in
      DAst.make ?loc genarg
@@ -249,7 +287,7 @@ let antiquotation_to_glob_constr ?loc (glob_sign: Genintern.glob_sign) : antiquo
 let antiquotation_to_glob_constr ?loc glob_sign : antiquotation -> Terms.glob_constr = function
   | `Expr e -> Constrintern.intern_core WithoutTypeConstraint glob_sign e
   | `Preterm e -> e
-  | (`Constr _ | `Open_constr _) as antiquotation ->
+  | (`Constr _ | `Open_constr _ | `Pattern _) as antiquotation ->
      let open Glob_term in
      let genarg = GGenarg (GenConstr.Glb (wit_antiquotation, antiquotation)) in
      DAst.make ?loc genarg
@@ -258,6 +296,10 @@ let antiquotation_to_glob_constr ?loc glob_sign : antiquotation -> Terms.glob_co
 let glob_constr_of_quasistring ?loc s =
   let partial_term = constrexpr_of_quasistring ?loc s in
   Terms.Glob_constr.of_constrexpr partial_term
+
+let glob_pattern_of_quasistring ?loc s =
+  let partial_pattern = pattern_of_quasistring ?loc s in
+  Terms.Glob_constr.of_constrexpr ~pattern:true partial_pattern
 
 let substitute_in_glob_constr glob_constr substitutions =
   Hole.fill_glob_holes

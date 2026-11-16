@@ -69,6 +69,7 @@ module Antiquotations = struct
   let open_constr ~loc expr = [%expr `Open_constr ([%e expr] : Ppx_rocq_runtime.Terms.open_constr)]
   let preterm ~loc expr = [%expr `Preterm ([%e expr] : Ppx_rocq_runtime.Terms.glob_constr)]
   let expr ~loc expr = [%expr `Expr ([%e expr] : Ppx_rocq_runtime.Terms.constrexpr)]
+  let pattern ~loc expr = [%expr `Pattern ([%e expr] : Ppx_rocq_runtime.Terms.pattern)]
 
   let term = [
       ("constr", constr);
@@ -76,16 +77,18 @@ module Antiquotations = struct
       ("preterm", preterm);
       ("expr", expr);
     ]
+
+  let term_or_pattern = ("pattern", pattern) :: term
 end
 
-let expand_with_antiquotations ~default_kind ~parse ~quasiparse ~ctxt string string_loc =
+let expand_with_antiquotations ~default_kind ~allowed_kinds ~parse ~quasiparse ~ctxt string string_loc =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let template = Template.parse ~loc:string_loc string in
   let runtime_template, antiquotations =
     Template.interpret
       ~loc:string_loc
       ~default:default_kind
-      ~explicit:Antiquotations.term
+      ~explicit:allowed_kinds
       template
   in
   let rocq_loc = Ppx_utils.rocq_loc_of_loc string_loc in
@@ -101,6 +104,7 @@ module Expr = struct
   let expand =
     expand_with_antiquotations
       ~default_kind:Antiquotations.expr
+      ~allowed_kinds:Antiquotations.term
       ~parse:(fun ~loc ~string_loc:_ ~rocq_loc ~string ->
         [%expr Ppx_rocq_runtime.Parsing.parse_constrexpr ~loc:[%e rocq_loc] [%e string]]
         |> Hoister.hoist ~loc ~name:"expr"
@@ -127,6 +131,7 @@ module Preterm = struct
   let expand =
     expand_with_antiquotations
       ~default_kind:Antiquotations.preterm
+      ~allowed_kinds:Antiquotations.term
       ~parse:(fun ~loc ~string_loc ~rocq_loc ~string ->
         [%expr Ppx_rocq_runtime.Parsing.glob_constr_of_string ~loc:[%e rocq_loc] [%e string]]
         |> Persistent_objects.persist ~loc ~string_loc
@@ -155,6 +160,7 @@ module Constr = struct
   let expand =
     expand_with_antiquotations
       ~default_kind:Antiquotations.constr
+      ~allowed_kinds:Antiquotations.term
       ~parse:(fun ~loc ~string_loc ~rocq_loc ~string ->
         [%expr Ppx_rocq_runtime.Parsing.glob_constr_of_string ~loc:[%e rocq_loc] [%e string]]
         |> Persistent_objects.persist ~loc ~string_loc
@@ -188,6 +194,7 @@ module Open_constr = struct
   let expand =
     expand_with_antiquotations
       ~default_kind:Antiquotations.open_constr
+      ~allowed_kinds:Antiquotations.term
       ~parse:(fun ~loc ~string_loc ~rocq_loc ~string ->
         [%expr Ppx_rocq_runtime.Parsing.glob_constr_of_string ~loc:[%e rocq_loc] [%e string]]
         |> Persistent_objects.persist ~loc ~string_loc
@@ -216,6 +223,41 @@ module Open_constr = struct
   let rule = Ppxlib.Context_free.Rule.extension extension
 end
 
+(** {2 [Pattern.constr_pattern]} *)
+
+module Pattern = struct
+  let expand =
+    expand_with_antiquotations
+      ~default_kind:Antiquotations.pattern
+      ~allowed_kinds:Antiquotations.term_or_pattern
+      ~parse:(fun ~loc ~string_loc ~rocq_loc ~string ->
+        [%expr Ppx_rocq_runtime.Parsing.glob_pattern_of_string ~loc:[%e rocq_loc] [%e string]]
+        |> Persistent_objects.persist ~loc ~string_loc
+        |> Hoister.hoist ~loc ~name:"preterm"
+        |> fun t -> [%expr Ppx_rocq_runtime.Terms.Pattern.of_glob_constr [%e t]]
+        |> Hoister.hoist ~loc ~name:"pattern"
+      )
+      ~quasiparse:(fun ~loc ~string_loc ~rocq_loc ~string ~antiquotations ->
+        [%expr Ppx_rocq_runtime.Parsing.glob_pattern_of_quasistring ~loc:[%e rocq_loc] [%e string]]
+        |> Persistent_objects.persist ~loc ~string_loc
+        |> Hoister.hoist ~loc ~name:"preterm"
+        |> fun t -> [%expr Ppx_rocq_runtime.Parsing.substitute_in_glob_constr [%e t] s]
+        |> fun t -> [%expr Ppx_rocq_runtime.Terms.Pattern.of_glob_constr [%e t]]
+        |> fun body -> [%expr fun s -> [%e body]]
+        |> Hoister.hoist ~loc ~name:"pattern"
+        |> fun f -> [%expr [%e f] [%e antiquotations]]
+      )
+
+  let extension =
+    Extension.V3.declare
+      "rocq.pattern"
+      Extension.Context.expression
+      Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
+      expand
+
+  let rule = Ppxlib.Context_free.Rule.extension extension
+end
+
 (**/**)
 
 let () =
@@ -229,6 +271,7 @@ let () =
       Preterm.rule;
       Constr.rule;
       Open_constr.rule;
+      Pattern.rule;
 
       Match_extensions.Rocq.rule;
       Match_extensions.Lazy.rule;
