@@ -9,7 +9,7 @@ let nat_plus_assoc = {%constr| forall x y z : nat, (x + y) + z = x + (y + z) |} 
 
 `ppx_rocq` is notably used by [Camltac](https://github.com/epfl-systemf/camltac), where it provides:
 
-1. Quotations from Ltac2 (`%constr`, `%open_constr`, `%preterm`), an extra quotation for concrete syntax terms (`%expr`), and quotations for identifiers (`%ident`) and qualifiers (`%qualid`). 
+1. Quotations from Ltac2 (`%constr`, `%open_constr`, `%preterm`), an extra quotation for concrete syntax terms (`%expr`), and quotations for identifiers (`%ident`) and qualified identifiers (`%qualid`). 
 
 2. Anti-quotations, using the `%{…}` notation:
 
