@@ -25,10 +25,13 @@ let rocq_loc_of_loc loc =
 let with_let_bindings ~loc bindings expr =
   let rec with_let_bindings = function
     | [] -> expr
-    | (name, binding) :: rest ->
+    | (name, allow_unused, binding) :: rest ->
        let expr = with_let_bindings rest in
        let name = Ast_builder.Default.ppat_var ~loc:name.loc name in
-       [%expr let [%p name] = [%e binding] in [%e expr]]
+       if allow_unused then
+         [%expr let[@ocaml.warning "-26"] [%p name] = [%e binding] in [%e expr]]
+       else
+         [%expr let [%p name] = [%e binding] in [%e expr]]
   in
   with_let_bindings bindings
 
