@@ -52,7 +52,7 @@ let parse_name ~question_mark string =
   | "" -> None
   | _ -> Some (name, ident_end)
 
-let find ~from string =
+let rec find ~from string =
   let ( let* ) = Option.bind in
   let* question_mark = Located_string.find ~from '?' string in
   (* Check for second-order patterns of the form [@?ident]. *)
@@ -66,7 +66,9 @@ let find ~from string =
   | Some (name, ident_end) ->
      let loc = { loc_start = start_pos.pos; loc_end = name.loc.loc_end; loc_ghost = false } in
      Some ({ name = { txt = name.txt; loc }; kind }, ident_end)
-  | None -> None
+  | None ->
+     (* False positive: the string contained a lone "?". *)
+     find ~from:(Located_string.advance "?" question_mark) string
 
 let rec find_all_from ~from ~acc string =
   match find ~from string with
