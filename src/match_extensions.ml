@@ -240,10 +240,12 @@ module Term = struct
     | [] ->
        [%expr fun [%p context] _ -> [%e rhs.txt]]
     | pattern_variables ->
-       let to_binding Pattern_variable.{ name; _ } =
+       let to_binding (Pattern_variable.{ name; _ }, occurrences) =
          let loc = name.loc in
          let name_expr = Ast_builder.Default.estring ~loc name.txt in
-         name, [%expr Names.(Id.Map.find (Id.of_string [%e name_expr]) __subst)]
+         (* Silence "unused variable" warning for non-linear variables. *)
+         let allow_unused = occurrences >= 2 in
+         name, allow_unused, [%expr Names.(Id.Map.find (Id.of_string [%e name_expr]) __subst)]
        in
        let bindings = List.map to_binding pattern_variables in
        [%expr fun [%p context] __subst -> [%e Ppx_utils.with_let_bindings ~loc bindings rhs.txt]]

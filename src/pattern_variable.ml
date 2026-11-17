@@ -15,7 +15,27 @@ module Ord = struct
   let compare x y = String.compare x.name.txt y.name.txt
 end
 
-module Set = Set.Make(Ord)
+module Map = Map.Make(Ord)
+
+module Set = struct
+  type t = int Map.t
+
+  let empty = Map.empty
+
+  let add elt s =
+    Map.update elt (function Some n -> Some (n + 1) | None -> Some 1) s
+
+  let union s1 s2 =
+    Map.merge (fun _ v1 v2 ->
+        match v1, v2 with
+        | Some n, Some m -> Some (n + m)
+        | Some n, None   -> Some n
+        | None  , Some m -> Some m
+        | None  , None   -> None
+      ) s1 s2
+
+   let elements = Map.bindings
+end
 
 (* TODO: We perform a very limited logic:
    - We don't check that the first letter is lowercase.
