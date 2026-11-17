@@ -54,10 +54,6 @@ let open_constr_of_string ?loc s =
   let glob_constr = glob_constr_of_string ?loc s in
   Terms.Open_constr.of_glob_constr glob_constr
 
-let match_pattern_of_string ?loc s =
-  let parsed_pattern = parse_match_pattern ?loc s in
-  Terms.Pattern.of_constrexpr parsed_pattern
-
 (** {1 Parsing with antiquotations} *)
 
 (** {2 Generic arguments} *)

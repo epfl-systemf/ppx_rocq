@@ -61,9 +61,6 @@ val open_constr_of_string : ?loc:Loc.t -> string -> open_constr Proofview.tactic
 (** [open_constr_of_string s] behaves like {!constr_of_string}, but evars are
     allowed in the resulting term. *)
 
-val match_pattern_of_string : ?loc:Loc.t -> string -> pattern Proofview.tactic
-(** [match_pattern_of_string s] parses and interprets pattern [s]. *)
-
 (** {1 Parsing with antiquotations} *)
 
 (** An antiquotation is a part of a term that is substituted by an OCaml
