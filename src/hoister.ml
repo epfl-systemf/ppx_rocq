@@ -25,7 +25,11 @@ let hoisted_expressions_collector =
          (* [open (struct … end)] hides our generated bindings from inferred
             signatures, e.g., as printed by [ocamlc -i]. *)
          let binding = [%stri open (struct let [%p variable] = [%e expr] end)] in
-         (Ast_builder.Default.evar ~loc symbol, binding :: acc)
+         (* The dummy type constraint keeps type errors from mentioning the generated
+            name, as OCaml prints "This expression has type…" for non-identifier
+            expressions. *)
+         let expr = [%expr ([%e Ast_builder.Default.evar ~loc symbol] : _)] in
+         (expr, binding :: acc)
       | Error _ ->
          super#expression expr acc
   end
